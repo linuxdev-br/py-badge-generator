@@ -121,7 +121,7 @@ for filename in filenames:
         badge = BadgeImage("badge_template.png")
         badge.drawPerson(name)
         badge.drawCompany(company)
-        badge.save(filename + "\\" + filename + "_badge_" + str(id) + ".png")
+        badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"))
         count += 1
 print "\n%d badges created" % (count)
 
