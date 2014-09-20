@@ -43,6 +43,7 @@ class BadgeImage(object):
         self.img = Image.open(filename)
         self.draw = ImageDraw.Draw(self.img)
         self.width = int(self.img.size[0]*0.9)
+        self.ttfFont = "Trebucbd.ttf"
 
     def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
         (font, color) = font_color
@@ -56,11 +57,11 @@ class BadgeImage(object):
 
     def getFitSize(self, startsize, text):
         size = startsize
-        font = ImageFont.truetype("Trebucbd.ttf", int(size*300/72))
+        font = ImageFont.truetype(self.ttfFont, int(size*300/72))
         textwidth, textheight = font.getsize(text)
         while textwidth > self.width:
             size -= 1
-            font = ImageFont.truetype("Trebucbd.ttf", int(size*300/72))
+            font = ImageFont.truetype(self.ttfFont, int(size*300/72))
             textwidth, textheight = font.getsize(text)
         return size
 
@@ -74,17 +75,17 @@ class BadgeImage(object):
         else:
             firstname, rest = (name, "")
         if size < 45 and rest != "":
-            personFont = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(45, firstname)*300/72))
+            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, firstname)*300/72))
             self.drawCenteredText(line1pos, firstname, (personFont, "#ffffff"))
-            personFont = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(45, rest)*300/72))
+            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, rest)*300/72))
             self.drawCenteredText(line2pos, rest, (personFont, "#ffffff"))
         else:
-            personFont = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(45, name)*300/72))
+            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, name)*300/72))
             self.drawCenteredText(linepos, name, (personFont, "#ffffff"))
 
     def drawCompany(self, name):
         pos = (self.img.size[0]/2, 500)
-        font = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(26, name)*300/72))
+        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
         self.drawCenteredText(pos, name, (font, "#0099ff"))
 
     def save(self, filename, doubleSided=True):
@@ -128,7 +129,8 @@ for filename in filenames:
         os.makedirs(filename)
     for id, name, company in reader.getData():
         print(id, name, company)
-        badge = BadgeImage("badge_template.png")
+        badgeTemplate = "badgeTemplate.png"
+        badge = BadgeImage(badgeTemplate)
         badge.drawPerson(name)
         badge.drawCompany(company)
         badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"))
