@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # This software is licensed under the MIT License
 #
@@ -24,10 +25,18 @@
 # THE SOFTWARE.
 # 
 
-#!/usr/bin/python
-
 import os
-import Image, ImageDraw, ImageFont
+try:
+    from PIL import Image
+    from PIL import ImageDraw
+    from PIL import ImageFont
+except:
+    try:
+        import Image
+        import ImageDraw
+        import ImageFont
+    except:
+        print("Install PIL or Pillow please")
 
 class BadgeImage(object):
     def __init__(self, filename):
@@ -35,7 +44,8 @@ class BadgeImage(object):
         self.draw = ImageDraw.Draw(self.img)
         self.width = int(self.img.size[0]*0.9)
 
-    def drawAlignedText(self, pos, text, (font, color), xtransform, ytransform):
+    def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
+        (font, color) = font_color
         width,height = font.getsize(text)
         xpos = xtransform(pos[0], width)
         ypos = ytransform(pos[1], height)
@@ -46,11 +56,11 @@ class BadgeImage(object):
 
     def getFitSize(self, startsize, text):
         size = startsize
-        font = ImageFont.truetype("Trebucbd.ttf", size*300/72)
+        font = ImageFont.truetype("Trebucbd.ttf", int(size*300/72))
         textwidth, textheight = font.getsize(text)
         while textwidth > self.width:
             size -= 1
-            font = ImageFont.truetype("Trebucbd.ttf", size*300/72)
+            font = ImageFont.truetype("Trebucbd.ttf", int(size*300/72))
             textwidth, textheight = font.getsize(text)
         return size
 
@@ -64,17 +74,17 @@ class BadgeImage(object):
         else:
             firstname, rest = (name, "")
         if size < 45 and rest != "":
-            personFont = ImageFont.truetype("Trebucbd.ttf", self.getFitSize(45, firstname)*300/72)
+            personFont = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(45, firstname)*300/72))
             self.drawCenteredText(line1pos, firstname, (personFont, "#ffffff"))
-            personFont = ImageFont.truetype("Trebucbd.ttf", self.getFitSize(45, rest)*300/72)
+            personFont = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(45, rest)*300/72))
             self.drawCenteredText(line2pos, rest, (personFont, "#ffffff"))
         else:
-            personFont = ImageFont.truetype("Trebucbd.ttf", self.getFitSize(45, name)*300/72)
+            personFont = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(45, name)*300/72))
             self.drawCenteredText(linepos, name, (personFont, "#ffffff"))
 
     def drawCompany(self, name):
         pos = (self.img.size[0]/2, 500)
-        font = ImageFont.truetype("Trebucbd.ttf", self.getFitSize(26, name)*300/72)
+        font = ImageFont.truetype("Trebucbd.ttf", int(self.getFitSize(26, name)*300/72))
         self.drawCenteredText(pos, name, (font, "#0099ff"))
 
     def save(self, filename, doubleSided=True):
@@ -98,11 +108,11 @@ class DataFileReader(object):
             if len(line.strip()) != 0:
                 name,company = line.split("\t")
                 name = name.title()
-		if not company.startswith("*"):
-                    company = company.title()
-                else:
-                    company = company[1:]
-                yield (id, name.title(), company)
+        if not company.startswith("*"):
+            company = company.title()
+        else:
+            company = company[1:]
+            yield (id, name.title(), company)
 
 import sys
 
@@ -115,13 +125,13 @@ count = 0
 for filename in filenames:
     reader = DataFileReader(filename + ".csv")
     if not os.path.exists(filename):
-	    os.makedirs(filename)
+        os.makedirs(filename)
     for id, name, company in reader.getData():
-        print id, name, company
+        print(id, name, company)
         badge = BadgeImage("badge_template.png")
         badge.drawPerson(name)
         badge.drawCompany(company)
         badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"))
         count += 1
-print "\n%d badges created" % (count)
+print("\n%d badges created" % (count))
 
