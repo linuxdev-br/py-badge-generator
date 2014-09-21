@@ -71,7 +71,7 @@ class BadgeImage(object):
     def drawPerson(self, name):
         linepos = (self.img.size[0]/2, self.img.size[1]/2)
         line1pos = (self.img.size[0]/2, 300)
-        line2pos = (self.img.size[0]/2, int(self.img.size[1]/1.6))
+        line2pos = (self.img.size[0]/2, int(self.img.size[1]/1.7))
         size = self.getFitSize(45, name)
         if name.find(" ") >= 0:
             firstname, rest = name.split(" ", 1)
