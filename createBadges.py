@@ -112,10 +112,10 @@ class DataFileReader(object):
             if len(line.strip()) != 0:
                 name,company = line.split("\t")
                 name = name.title()
-        if not company.startswith("*"):
-            company = company.title()
-        else:
-            company = company[1:]
+            if not company.startswith("*"):
+                company = company.title()
+            else:
+                company = company[1:]
             yield (id, name.title(), company)
 
 
