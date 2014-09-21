@@ -25,7 +25,7 @@
 # THE SOFTWARE.
 # 
 
-import os
+import os,sys
 try:
     from PIL import Image
     from PIL import ImageDraw
@@ -44,6 +44,9 @@ class BadgeImage(object):
         self.draw = ImageDraw.Draw(self.img)
         self.width = int(self.img.size[0]*0.9)
         self.ttfFont = "Trebucbd.ttf"
+        self.colorSeperator = "#000000"
+        self.textColorPerson = "#000000"
+        self.textColorCompany = "#0099ff"
 
     def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
         (font, color) = font_color
@@ -76,24 +79,24 @@ class BadgeImage(object):
             firstname, rest = (name, "")
         if size < 45 and rest != "":
             personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, firstname)*300/72))
-            self.drawCenteredText(line1pos, firstname, (personFont, "#ffffff"))
+            self.drawCenteredText(line1pos, firstname, (personFont, self.textColorPerson))
             personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, rest)*300/72))
-            self.drawCenteredText(line2pos, rest, (personFont, "#ffffff"))
+            self.drawCenteredText(line2pos, rest, (personFont, self.textColorPerson))
         else:
             personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, name)*300/72))
-            self.drawCenteredText(linepos, name, (personFont, "#ffffff"))
+            self.drawCenteredText(linepos, name, (personFont, self.textColorPerson))
 
     def drawCompany(self, name):
         pos = (self.img.size[0]/2, 500)
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
-        self.drawCenteredText(pos, name, (font, "#0099ff"))
+        self.drawCenteredText(pos, name, (font, self.textColorCompany))
 
     def save(self, filename, doubleSided=True):
         if not doubleSided:
             self.img.save(filename)
             return
 
-        newimg = Image.new("RGB", (self.img.size[0]*2+20, self.img.size[1]), "#000000")
+        newimg = Image.new("RGB", (self.img.size[0]*2+20, self.img.size[1]), self.colorSeperator)
         newimg.paste(self.img, (0,0))
         newimg.paste(self.img, (self.img.size[0]+20,0))
         newimg.save(filename)
@@ -115,7 +118,6 @@ class DataFileReader(object):
             company = company[1:]
             yield (id, name.title(), company)
 
-import sys
 
 if len(sys.argv) > 1:
     filenames = sys.argv[1:]
@@ -136,4 +138,3 @@ for filename in filenames:
         badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"))
         count += 1
 print("\n%d badges created" % (count))
-
