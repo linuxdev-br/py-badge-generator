@@ -69,9 +69,9 @@ class BadgeImage(object):
         return size
 
     def drawPerson(self, name):
-        linepos = (self.img.size[0]/2, 240)
-        line1pos = (self.img.size[0]/2, 150)
-        line2pos = (self.img.size[0]/2, 320)
+        linepos = (self.img.size[0]/2, self.img.size[1]/2)
+        line1pos = (self.img.size[0]/2, 300)
+        line2pos = (self.img.size[0]/2, int(self.img.size[1]/1.6))
         size = self.getFitSize(45, name)
         if name.find(" ") >= 0:
             firstname, rest = name.split(" ", 1)
@@ -87,7 +87,7 @@ class BadgeImage(object):
             self.drawCenteredText(linepos, name, (personFont, self.textColorPerson))
 
     def drawCompany(self, name):
-        pos = (self.img.size[0]/2, 500)
+        pos = (self.img.size[0]/2, 700)
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
         self.drawCenteredText(pos, name, (font, self.textColorCompany))
 
