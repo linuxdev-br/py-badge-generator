@@ -28,6 +28,7 @@
 import os,sys,re
 import inspect
 from colors import *
+from subprocess import call
 
 try:
     from PIL import Image
@@ -49,18 +50,20 @@ class BadgeImage(object):
         self.width = int(self.img.size[0]*0.9)
         self.ttfFontDir = "fonts"
         self.ttfFont = os.path.join(self.ttfFontDir, "Trebucbd.ttf")
-        self.colorSeperator = "#" + triplet(BLACK)
-        self.textColorPerson = "#" + triplet(BLACK)
         self.helloLang = {'en':'HELLO my name is','de':'HALLO mein Name ist','fr':'SALUT mon nom est','lu':'MOIEN mäi Numm ass'}
         self.iAmLang = {'en':"and I'm a ",'de':'und ich bin ','fr':'et je suis ','lu':'an ech sinn '}
 
+        self.colorSeperator = "#" + triplet(BLACK)
         self.textColorCompany = "#" + "0099ff"
+        self.textColorPerson = "#" + triplet(BLACK)
         self.textColorSoi = "#" + triplet(BLACK)
         self.textColorHello = "#" + triplet(BLACK)
         self.textColorColor = "#" + triplet(BLACK)
 
-    def reColor(self,filename,color):
-        pass
+    def reColor(self,srcFilename,dstFilename,color):
+        with open("colors.txt", "w") as text_file:
+            print("red {}".format(color), file=text_file)
+        call(["./mapcolors", "-f","colors.txt", srcFilename, dstFilename])
 
 
     def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
@@ -180,13 +183,13 @@ class DataFileReader(object):
             if re.search('^#', line):
                 continue
             if len(line.strip()) != 0:
-                name,company = line.split("\t")
+                name,company,language = line.split("\t")
                 name = name.title()
             if not company.startswith("*"):
                 company = company.title()
             else:
                 company = company[1:]
-            yield (id, name.title(), company)
+            yield (id, name.title(), company, language)
 
 
 if len(sys.argv) > 1:
@@ -199,18 +202,23 @@ for filename in filenames:
     reader = DataFileReader(filename + ".csv")
     if not os.path.exists(filename):
         os.makedirs(filename)
-    for id, name, company in reader.getData():
-        print(id, name, company)
-        badgeTemplate = "badgeTemplate.png"
-        badge = BadgeImage(badgeTemplate)
-        confBadge = {'LANG':'lu',
-                    'color':'#ff11ff',
-                     'what':'nul'}
-        badge.drawHello(confBadge["LANG"])
-        badge.drawColor(confBadge["color"])
-        badge.drawPerson(name)
-        badge.drawSoi(confBadge["LANG"],confBadge["what"])
-        badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"), False)
-        badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + ".png"), confBadge["color"])
+    colorList = []
+    colorList = [ "RED", "ORANGE", "BLUE", "YELLOW", "GREEN", "CYAN", "PURPLE", "BROWN", "GRAY", "PINK", "VIOLET", "WHITE", "BLACK" ]
+    for id, name, company,language in reader.getData():
+        for color in colorList:
+            print(id, name, company, triplet(eval(color)))
+            badgeTemplate = "badgeTemplate.png"
+            badge = BadgeImage(badgeTemplate)
+            confBadge = {'LANG': language,
+                        'color': "#" + triplet(eval(color)),
+                         'what': company}
+            badge.drawHello(confBadge["LANG"])
+            badge.drawColor(confBadge["color"])
+            badge.drawPerson(name)
+            badge.drawSoi(confBadge["LANG"],confBadge["what"])
+            badge.save(os.path.join(filename, filename + "_badge_" + str(id) + confBadge["LANG"] + ".png"), False)
+            badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + confBadge["color"][1:] + ".png"), confBadge["color"])
+            confBadge["color"] = "#" + triplet(BLACK)
+            badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + confBadge["LANG"] + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + confBadge["color"][1:] + confBadge["LANG"] + ".png"), confBadge["color"])
         count += 1
 print("\n%d badges created" % (count))
