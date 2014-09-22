@@ -25,7 +25,9 @@
 # THE SOFTWARE.
 # 
 
-import os,sys
+import os,sys,re
+import inspect
+
 try:
     from PIL import Image
     from PIL import ImageDraw
@@ -40,23 +42,38 @@ except:
 
 class BadgeImage(object):
     def __init__(self, filename):
+        self.debug = False
         self.img = Image.open(filename)
         self.draw = ImageDraw.Draw(self.img)
         self.width = int(self.img.size[0]*0.9)
-        self.ttfFont = "Trebucbd.ttf"
+        self.ttfFontDir = "fonts"
+        self.ttfFont = os.path.join(self.ttfFontDir, "Trebucbd.ttf")
         self.colorSeperator = "#000000"
         self.textColorPerson = "#000000"
+        self.helloLang = {'en':'HELLO my name is','de':'HALLO mein Name ist','fr':'SALUT mon nom est','lu':'MOIEN mäi Numm ass'}
+        self.iAmLang = {'en':"and I'm a ",'de':'und ich bin ','fr':'et je suis ','lu':'an ech sinn '}
         self.textColorCompany = "#0099ff"
+        self.textColorSoi = "#0099ff"
+        self.textColorHello = "#0099ff"
+        self.textColorColor = "#0099ff"
 
     def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
         (font, color) = font_color
         width,height = font.getsize(text)
         xpos = xtransform(pos[0], width)
         ypos = ytransform(pos[1], height)
+        if inspect.stack()[1][3] and self.debug == "drawRightAlignedText":
+            print(xpos,ypos)
         self.draw.text((xpos, ypos), text, fill=color, font=font)
 
     def drawCenteredText(self, pos, text, font):
         self.drawAlignedText(pos, text, font, lambda x,w:x-w/2, lambda y,h:y-h/2)
+
+    def drawLeftAlignedText(self, pos, text, font):
+        self.drawAlignedText(pos, text, font, lambda x,w:x, lambda y,h:y-h)
+
+    def drawRightAlignedText(self, pos, text, font):
+        self.drawAlignedText(pos, text, font, lambda x,w:w+x, lambda y,h:y-h)
 
     def getFitSize(self, startsize, text):
         size = startsize
@@ -86,6 +103,43 @@ class BadgeImage(object):
             personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, name)*300/72))
             self.drawCenteredText(linepos, name, (personFont, self.textColorPerson))
 
+    def drawHello(self, language):
+        pos = (30, 100)
+        if self.debug:
+            print(pos)
+        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
+        if language == "en":
+            hello, rest = self.helloLang["en"].split(" ",1)
+        if language == "de":
+            hello, rest = self.helloLang["de"].split(" ",1)
+        if language == "fr":
+            hello, rest = self.helloLang["fr"].split(" ",1)
+        if language == "lu":
+            hello, rest = self.helloLang["lu"].split(" ",1)
+        width,height = font.getsize(hello)
+        self.drawLeftAlignedText(pos, hello, (font, self.textColorHello))
+        self.drawLeftAlignedText( (pos[0],pos[1]+height+int((height/2)) ), rest, (font, self.textColorHello) )
+
+    def drawSoi(self, language, what):
+        pos = (self.img.size[0]/2, 700)
+        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
+        if language == "en":
+            iAm = self.iAmLang["en"] + what + "!"
+        if language == "de":
+            iAm = self.iAmLang["de"] + what + "!"
+        if language == "fr":
+            iAm = self.iAmLang["fr"] + what + "!"
+        if language == "lu":
+            iAm = self.iAmLang["lu"] + what + "!"
+        width,height = font.getsize(iAm)
+        self.drawRightAlignedText((pos[0]-(width*1.3),pos[1]), iAm, (font, self.textColorSoi))
+
+    def drawColor(self, color):
+        pos = (self.img.size[0]/2, 700)
+        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
+        width,height = font.getsize(color)
+        self.drawRightAlignedText((pos[0]-(width/2.8),height), color, (font, self.textColorColor))
+
     def drawCompany(self, name):
         pos = (self.img.size[0]/2, 700)
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
@@ -109,6 +163,8 @@ class DataFileReader(object):
 
     def getData(self):
         for id, line in enumerate(self.lines):
+            if re.search('^#', line):
+                continue
             if len(line.strip()) != 0:
                 name,company = line.split("\t")
                 name = name.title()
@@ -133,8 +189,10 @@ for filename in filenames:
         print(id, name, company)
         badgeTemplate = "badgeTemplate.png"
         badge = BadgeImage(badgeTemplate)
+        badge.drawHello('fr')
+        badge.drawColor('#ff00ff')
         badge.drawPerson(name)
-        badge.drawCompany(company)
-        badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"))
+        badge.drawSoi('en','coder')
+        badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"), False)
         count += 1
 print("\n%d badges created" % (count))
