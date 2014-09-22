@@ -27,6 +27,7 @@
 
 import os,sys,re
 import inspect
+from colors import *
 
 try:
     from PIL import Image
@@ -48,14 +49,19 @@ class BadgeImage(object):
         self.width = int(self.img.size[0]*0.9)
         self.ttfFontDir = "fonts"
         self.ttfFont = os.path.join(self.ttfFontDir, "Trebucbd.ttf")
-        self.colorSeperator = "#000000"
-        self.textColorPerson = "#000000"
+        self.colorSeperator = "#" + triplet(BLACK)
+        self.textColorPerson = "#" + triplet(BLACK)
         self.helloLang = {'en':'HELLO my name is','de':'HALLO mein Name ist','fr':'SALUT mon nom est','lu':'MOIEN mäi Numm ass'}
         self.iAmLang = {'en':"and I'm a ",'de':'und ich bin ','fr':'et je suis ','lu':'an ech sinn '}
-        self.textColorCompany = "#0099ff"
-        self.textColorSoi = "#0099ff"
-        self.textColorHello = "#0099ff"
-        self.textColorColor = "#0099ff"
+
+        self.textColorCompany = "#" + "0099ff"
+        self.textColorSoi = "#" + triplet(BLACK)
+        self.textColorHello = "#" + triplet(BLACK)
+        self.textColorColor = "#" + triplet(BLACK)
+
+    def reColor(self,filename,color):
+        pass
+
 
     def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
         (font, color) = font_color
@@ -110,13 +116,16 @@ class BadgeImage(object):
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
         if language == "en":
             hello, rest = self.helloLang["en"].split(" ",1)
+            width,height = font.getsize(hello)
         if language == "de":
             hello, rest = self.helloLang["de"].split(" ",1)
+            width,height = font.getsize(hello)
         if language == "fr":
             hello, rest = self.helloLang["fr"].split(" ",1)
+            width,height = font.getsize(rest)
         if language == "lu":
             hello, rest = self.helloLang["lu"].split(" ",1)
-        width,height = font.getsize(hello)
+            width,height = font.getsize(hello)
         self.drawLeftAlignedText(pos, hello, (font, self.textColorHello))
         self.drawLeftAlignedText( (pos[0],pos[1]+height+int((height/2)) ), rest, (font, self.textColorHello) )
 
@@ -125,13 +134,18 @@ class BadgeImage(object):
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
         if language == "en":
             iAm = self.iAmLang["en"] + what + "!"
+            width,height = font.getsize(iAm)
         if language == "de":
             iAm = self.iAmLang["de"] + what + "!"
+            width,height = font.getsize(iAm)
         if language == "fr":
             iAm = self.iAmLang["fr"] + what + "!"
+            offset = 10
+            width,height = font.getsize(iAm)
+            #pos[1] += offset
         if language == "lu":
             iAm = self.iAmLang["lu"] + what + "!"
-        width,height = font.getsize(iAm)
+            width,height = font.getsize(iAm)
         self.drawRightAlignedText((pos[0]-(width*1.3),pos[1]), iAm, (font, self.textColorSoi))
 
     def drawColor(self, color):
@@ -189,10 +203,14 @@ for filename in filenames:
         print(id, name, company)
         badgeTemplate = "badgeTemplate.png"
         badge = BadgeImage(badgeTemplate)
-        badge.drawHello('fr')
-        badge.drawColor('#ff00ff')
+        confBadge = {'LANG':'lu',
+                    'color':'#ff11ff',
+                     'what':'nul'}
+        badge.drawHello(confBadge["LANG"])
+        badge.drawColor(confBadge["color"])
         badge.drawPerson(name)
-        badge.drawSoi('en','coder')
+        badge.drawSoi(confBadge["LANG"],confBadge["what"])
         badge.save(os.path.join(filename, filename + "_badge_" + str(id) + ".png"), False)
+        badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + ".png"), confBadge["color"])
         count += 1
 print("\n%d badges created" % (count))
