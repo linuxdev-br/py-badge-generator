@@ -155,7 +155,7 @@ class BadgeImage(object):
         pos = (self.img.size[0]/2, 700)
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
         width,height = font.getsize(color)
-        self.drawRightAlignedText((pos[0]-(width/2.8),height), color, (font, self.textColorColor))
+        self.drawLeftAlignedText((pos[0]+200,height-10), color, (font, self.textColorColor))
 
     def drawCompany(self, name):
         pos = (self.img.size[0]/2, 700)
@@ -203,22 +203,20 @@ for filename in filenames:
     if not os.path.exists(filename):
         os.makedirs(filename)
     colorList = []
-    colorList = [ "RED", "ORANGE", "BLUE", "YELLOW", "GREEN", "CYAN", "PURPLE", "BROWN", "GRAY", "PINK", "VIOLET", "WHITE", "BLACK" ]
+    colorList = [ "RED", "ORANGE", "BLUE", "YELLOW", "GREEN", "CYAN", "PURPLE", "BROWN", "GRAY", "PINK", "VIOLET", "WHITE" ]
     for id, name, company,language in reader.getData():
         for color in colorList:
-            print(id, name, company, triplet(eval(color)))
+            print(id, name, company, "http://www.colorhexa.com/"+triplet(eval(color)))
             badgeTemplate = "badgeTemplate.png"
             badge = BadgeImage(badgeTemplate)
             confBadge = {'LANG': language,
                         'color': "#" + triplet(eval(color)),
                          'what': company}
             badge.drawHello(confBadge["LANG"])
-            badge.drawColor(confBadge["color"])
+            badge.drawColor(confBadge["color"].upper())
             badge.drawPerson(name)
             badge.drawSoi(confBadge["LANG"],confBadge["what"])
             badge.save(os.path.join(filename, filename + "_badge_" + str(id) + confBadge["LANG"] + ".png"), False)
-            badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + confBadge["color"][1:] + ".png"), confBadge["color"])
-            confBadge["color"] = "#" + triplet(BLACK)
-            badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + confBadge["LANG"] + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + confBadge["color"][1:] + confBadge["LANG"] + ".png"), confBadge["color"])
+            badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + confBadge["LANG"] + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + confBadge["color"][1:] + ".png"), confBadge["color"])
         count += 1
 print("\n%d badges created" % (count))
