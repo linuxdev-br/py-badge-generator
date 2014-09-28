@@ -50,8 +50,15 @@ class BadgeImage(object):
         self.width = int(self.img.size[0]*0.9)
         self.ttfFontDir = "fonts"
         self.ttfFont = os.path.join(self.ttfFontDir, "Trebucbd.ttf")
-        self.helloLang = {'en':'HELLO my name is','de':'HALLO mein Name ist','fr':'SALUT mon nom est','lu':'MOIEN mäi Numm ass'}
-        self.iAmLang = {'en':"and I'm a ",'de':'und ich bin ','fr':'et je suis ','lu':'an ech sinn '}
+
+        self.helloLang = {'en':'HELLO my name is',
+                          'de':'HALLO mein Name ist',
+                          'fr':'SALUT mon nom est',
+                          'lu':'MOIEN mäi Numm ass'}
+        self.iAmLang   = {'en':"and I'm a ",
+                          'de':'und ich bin ',
+                          'fr':'et je suis ',
+                          'lu':'an ech sinn '}
 
         self.colorSeperator = "#" + triplet(BLACK)
         self.textColorCompany = "#" + "0099ff"
@@ -60,11 +67,8 @@ class BadgeImage(object):
         self.textColorHello = "#" + triplet(BLACK)
         self.textColorColor = "#" + triplet(BLACK)
 
-    def reColor(self,srcFilename,dstFilename,color):
-        with open("colors.txt", "w") as text_file:
-            print("red {}".format(color), file=text_file)
-        call(["./mapcolors", "-f","colors.txt", srcFilename, dstFilename])
-
+    def reColor(self,color, srcFile, dstFile):
+        call(["/usr/local/bin/convert", "images/badgeTemplate_bw.png", "+level-colors", color + ",white", srcFile, "-compose", "over", "-composite", dstFile])
 
     def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
         (font, color) = font_color
@@ -206,8 +210,8 @@ for filename in filenames:
     colorList = [ "RED", "ORANGE", "BLUE", "YELLOW", "GREEN", "CYAN", "PURPLE", "BROWN", "GRAY", "PINK", "VIOLET", "WHITE" ]
     for id, name, company,language in reader.getData():
         for color in colorList:
-            print(id, name, company, "http://www.colorhexa.com/"+triplet(eval(color)))
-            badgeTemplate = "badgeTemplate.png"
+            print("Badge ID: {} - Name: {} - What: {} - Color: http://www.colorhexa.com/{}".format(id, name, company, triplet(eval(color))))
+            badgeTemplate = "images/badgeTemplate_overlay.png"
             badge = BadgeImage(badgeTemplate)
             confBadge = {'LANG': language,
                         'color': "#" + triplet(eval(color)),
@@ -216,7 +220,9 @@ for filename in filenames:
             badge.drawColor(confBadge["color"].upper())
             badge.drawPerson(name)
             badge.drawSoi(confBadge["LANG"],confBadge["what"])
-            badge.save(os.path.join(filename, filename + "_badge_" + str(id) + confBadge["LANG"] + ".png"), False)
-            badge.reColor(os.path.join(filename, filename + "_badge_" + str(id) + confBadge["LANG"] + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + confBadge["color"][1:] + ".png"), confBadge["color"])
+            badge.save(os.path.join(filename, filename + "_badge_" + str(id) + "_" + confBadge["LANG"] + ".png"), False)
+            if badge.debug:
+                print(filename + "_badge_" + str(id) + "_" + confBadge["LANG"] + ".png")
+            badge.reColor(color,  os.path.join(filename, filename + "_badge_" + str(id) + "_" +  confBadge["LANG"] + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + "_" + confBadge["LANG"] + "_" + confBadge["color"][1:] + ".png"))
         count += 1
 print("\n%d badges created" % (count))
