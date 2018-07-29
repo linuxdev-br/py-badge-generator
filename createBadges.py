@@ -73,7 +73,7 @@ class BadgeImage(object):
         self.textColorColor = "#" + triplet(BLACK)
 
     def reColor(self,color, srcFile, dstFile):
-        call(["/usr/local/bin/convert", "images/badgeTemplate_bw.png", "+level-colors", color + ",white", srcFile, "-compose", "over", "-composite", dstFile])
+        call(["convert", "images/badgeTemplate_bw.png", "+level-colors", color + ",white", srcFile, "-compose", "over", "-composite", dstFile])
 
     def drawAlignedText(self, pos, text, font_color, xtransform, ytransform):
         (font, color) = font_color
