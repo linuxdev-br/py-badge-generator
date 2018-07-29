@@ -41,6 +41,7 @@ except:
         import ImageFont
     except:
         print("Install PIL or Pillow please")
+        sys.exit(1)
 
 class BadgeImage(object):
     def __init__(self, filename):
@@ -124,15 +125,19 @@ class BadgeImage(object):
         if language == "en":
             hello, rest = self.helloLang["en"].split(" ",1)
             width,height = font.getsize(hello)
-        if language == "de":
+        elif language == "de":
             hello, rest = self.helloLang["de"].split(" ",1)
             width,height = font.getsize(hello)
-        if language == "fr":
+        elif language == "fr":
             hello, rest = self.helloLang["fr"].split(" ",1)
             width,height = font.getsize(rest)
-        if language == "lu":
+        elif language == "lu":
             hello, rest = self.helloLang["lu"].split(" ",1)
             width,height = font.getsize(hello)
+        else:
+            print("No language detected!")
+            sys.exit(2)
+
         self.drawLeftAlignedText(pos, hello, (font, self.textColorHello))
         self.drawLeftAlignedText( (pos[0],pos[1]+height+int((height/2)) ), rest, (font, self.textColorHello) )
 
