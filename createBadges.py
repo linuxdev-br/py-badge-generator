@@ -55,11 +55,15 @@ class BadgeImage(object):
         self.helloLang = {'en':'HELLO my name is',
                           'de':'HALLO mein Name ist',
                           'fr':'SALUT mon nom est',
-                          'lu':'MOIEN mäi Numm ass'}
+                          'lu':'MOIEN mäi Numm ass',
+                          'pt':'OLÁ meu nome é',
+                          'es':'HOLA mi nombre es'}
         self.iAmLang   = {'en':"and I'm a ",
                           'de':'und ich bin ',
                           'fr':'et je suis ',
-                          'lu':'an ech sinn '}
+                          'lu':'an ech sinn ',
+                          'pt':'e eu sou ',
+                          'es':'y yo soy '}
 
         self.colorSeperator = "#" + triplet(BLACK)
         self.textColorCompany = "#" + "0099ff"
@@ -122,21 +126,9 @@ class BadgeImage(object):
         if self.debug:
             print(pos)
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
-        if language == "en":
-            hello, rest = self.helloLang["en"].split(" ",1)
-            width,height = font.getsize(hello)
-        elif language == "de":
-            hello, rest = self.helloLang["de"].split(" ",1)
-            width,height = font.getsize(hello)
-        elif language == "fr":
-            hello, rest = self.helloLang["fr"].split(" ",1)
-            width,height = font.getsize(rest)
-        elif language == "lu":
-            hello, rest = self.helloLang["lu"].split(" ",1)
-            width,height = font.getsize(hello)
-        else:
-            print("No language detected!")
-            sys.exit(2)
+
+        hello, rest = self.helloLang[language].split(" ",1)
+        width,height = font.getsize(hello)
 
         self.drawLeftAlignedText(pos, hello, (font, self.textColorHello))
         self.drawLeftAlignedText( (pos[0],pos[1]+height+int((height/2)) ), rest, (font, self.textColorHello) )
@@ -144,20 +136,8 @@ class BadgeImage(object):
     def drawSoi(self, language, what):
         pos = (self.img.size[0]/2, 700)
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
-        if language == "en":
-            iAm = self.iAmLang["en"] + what + "!"
-            width,height = font.getsize(iAm)
-        if language == "de":
-            iAm = self.iAmLang["de"] + what + "!"
-            width,height = font.getsize(iAm)
-        if language == "fr":
-            iAm = self.iAmLang["fr"] + what + "!"
-            offset = 10
-            width,height = font.getsize(iAm)
-            #pos[1] += offset
-        if language == "lu":
-            iAm = self.iAmLang["lu"] + what + "!"
-            width,height = font.getsize(iAm)
+        iAm = self.iAmLang[language] + what + "!"
+        width,height = font.getsize(iAm)
         self.drawRightAlignedText((pos[0]-(width*1.3),pos[1]), iAm, (font, self.textColorSoi))
 
     def drawColor(self, color):
