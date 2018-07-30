@@ -50,20 +50,14 @@ class BadgeImage(object):
         self.draw = ImageDraw.Draw(self.img)
         self.width = int(self.img.size[0]*0.9)
         self.ttfFontDir = "fonts"
-        self.ttfFont = os.path.join(self.ttfFontDir, "Trebucbd.ttf")
+        self.ttfFont = os.path.join(self.ttfFontDir, "Roboto-Medium.ttf")
 
-        self.helloLang = {'en':'HELLO my name is',
-                          'de':'HALLO mein Name ist',
-                          'fr':'SALUT mon nom est',
-                          'lu':'MOIEN mäi Numm ass',
-                          'pt':'OLÁ meu nome é',
-                          'es':'HOLA mi nombre es'}
-        self.iAmLang   = {'en':"and I'm a ",
-                          'de':'und ich bin ',
-                          'fr':'et je suis ',
-                          'lu':'an ech sinn ',
-                          'pt':'e eu sou ',
-                          'es':'y yo soy '}
+        self.helloLang = {'en':'HELLO',
+                          'de':'HALLO',
+                          'fr':'SALUT',
+                          'lu':'MOIEN',
+                          'pt':'OLÁ',
+                          'es':'HOLA'}
 
         self.colorSeperator = "#" + triplet(BLACK)
         self.textColorCompany = "#" + "0099ff"
@@ -125,18 +119,15 @@ class BadgeImage(object):
         pos = (30, 100)
         if self.debug:
             print(pos)
-        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
+        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(24, name)*300/72))
 
-        hello, rest = self.helloLang[language].split(" ",1)
-        width,height = font.getsize(hello)
-
+        hello = self.helloLang[language]
         self.drawLeftAlignedText(pos, hello, (font, self.textColorHello))
-        self.drawLeftAlignedText( (pos[0],pos[1]+height+int((height/2)) ), rest, (font, self.textColorHello) )
 
     def drawSoi(self, language, what):
         pos = (self.img.size[0]/2, 700)
         font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
-        iAm = self.iAmLang[language] + what + "!"
+        iAm = what
         width,height = font.getsize(iAm)
         self.drawRightAlignedText((pos[0]-(width*1.3),pos[1]), iAm, (font, self.textColorSoi))
 
@@ -172,7 +163,7 @@ class DataFileReader(object):
             if re.search('^#', line):
                 continue
             if len(line.strip()) != 0:
-                name,company,language = line.split("\t")
+                name,company,language = line.split(";")
                 name = name.title()
             if not company.startswith("*"):
                 company = company.title()
@@ -181,33 +172,28 @@ class DataFileReader(object):
             yield (id, name.title(), company, language)
 
 
-if len(sys.argv) > 1:
-    filenames = sys.argv[1:]
-else:
-    filenames = ["people"]
 
 count = 0
-for filename in filenames:
-    reader = DataFileReader(filename + ".csv")
-    if not os.path.exists(filename):
-        os.makedirs(filename)
-    colorList = []
-    colorList = [ "RED", "ORANGE", "BLUE", "YELLOW", "GREEN", "CYAN", "PURPLE", "BROWN", "GRAY", "PINK", "VIOLET", "WHITE" ]
-    for id, name, company,language in reader.getData():
-        for color in colorList:
-            print("Badge ID: {} - Name: {} - What: {} - Color: http://www.colorhexa.com/{}".format(id, name, company, triplet(eval(color))))
-            badgeTemplate = "images/badgeTemplate_overlay.png"
-            badge = BadgeImage(badgeTemplate)
-            confBadge = {'LANG': language,
-                        'color': "#" + triplet(eval(color)),
-                         'what': company}
-            badge.drawHello(confBadge["LANG"])
-            badge.drawColor(confBadge["color"].upper())
-            badge.drawPerson(name)
-            badge.drawSoi(confBadge["LANG"],confBadge["what"])
-            badge.save(os.path.join(filename, filename + "_badge_" + str(id) + "_" + confBadge["LANG"] + ".png"), False)
-            if badge.debug:
-                print(filename + "_badge_" + str(id) + "_" + confBadge["LANG"] + ".png")
-            badge.reColor(color,  os.path.join(filename, filename + "_badge_" + str(id) + "_" +  confBadge["LANG"] + ".png"), os.path.join(filename, filename + "_badge_" + str(id) + "_" + confBadge["LANG"] + "_" + confBadge["color"][1:] + ".png"))
-        count += 1
+dir = 'people'
+reader = DataFileReader("people.csv")
+if not os.path.exists(dir):
+    os.makedirs(dir)
+colorList = []
+colorList = [ "GRAY", ]
+for id, name, company,language in reader.getData():
+    for color in colorList:
+        print("Badge ID: {} - Name: {} - What: {} - Color: http://www.colorhexa.com/{}".format(id, name, company, triplet(eval(color))))
+        badgeTemplate = "images/badgeTemplate_overlay.png"
+        badge = BadgeImage(badgeTemplate)
+        confBadge = {'LANG': language,
+                    'color': "#" + triplet(eval(color)),
+                    'what': company}
+        badge.drawHello(confBadge["LANG"])
+        # badge.drawColor(confBadge["color"].upper())
+        badge.drawPerson(name)
+        badge.drawSoi(confBadge["LANG"],confBadge["what"])
+        filename = os.path.join(dir, dir + "_badge_" + str(id) + "_" + confBadge["LANG"] + ".png")
+        badge.save(filename, False)
+        badge.reColor(color, filename, filename)
+    count += 1
 print("\n%d badges created" % (count))
