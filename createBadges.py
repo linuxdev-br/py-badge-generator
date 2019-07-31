@@ -56,7 +56,7 @@ class BadgeImage(object):
                           'de':'HALLO',
                           'fr':'SALUT',
                           'lu':'MOIEN',
-                          'pt':'OLÁ',
+                          'pt':'',
                           'es':'HOLA'}
 
         self.colorSeperator = "#" + triplet(BLACK)
@@ -89,58 +89,37 @@ class BadgeImage(object):
 
     def getFitSize(self, startsize, text):
         size = startsize
-        font = ImageFont.truetype(self.ttfFont, int(size*300/72))
+        font = ImageFont.truetype(self.ttfFont, int(size))
         textwidth, textheight = font.getsize(text)
         while textwidth > self.width:
             size -= 1
-            font = ImageFont.truetype(self.ttfFont, int(size*300/72))
+            font = ImageFont.truetype(self.ttfFont, int(size))
             textwidth, textheight = font.getsize(text)
         return size
 
     def drawPerson(self, name):
-        linepos = (self.img.size[0]/2, self.img.size[1]/2)
-        line1pos = (self.img.size[0]/2, 300)
-        line2pos = (self.img.size[0]/2, int(self.img.size[1]/1.7))
-        size = self.getFitSize(45, name)
+        linepos = (self.img.size[0]/2, self.img.size[1]/4)
+        line1pos = (self.img.size[0]/2, self.img.size[1]/5)
+        line2pos = (self.img.size[0]/2, (self.img.size[1]/5)*2.4)
+        fitsize = 36
+        size = self.getFitSize(fitsize, name)
         if name.find(" ") >= 0:
             firstname, rest = name.split(" ", 1)
         else:
             firstname, rest = (name, "")
-        if size < 45 and rest != "":
-            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, firstname)*300/72))
+        if size < fitsize and rest != "":
+            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(fitsize, firstname)))
             self.drawCenteredText(line1pos, firstname, (personFont, self.textColorPerson))
-            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, rest)*300/72))
+            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(fitsize, rest)))
             self.drawCenteredText(line2pos, rest, (personFont, self.textColorPerson))
         else:
-            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(45, name)*300/72))
+            personFont = ImageFont.truetype(self.ttfFont, int(self.getFitSize(fitsize, name)))
             self.drawCenteredText(linepos, name, (personFont, self.textColorPerson))
 
-    def drawHello(self, language):
-        pos = (30, 100)
-        if self.debug:
-            print(pos)
-        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(24, name)*300/72))
-
-        hello = self.helloLang[language]
-        self.drawLeftAlignedText(pos, hello, (font, self.textColorHello))
-
     def drawSoi(self, language, what):
-        pos = (self.img.size[0]/2, 700)
-        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
-        iAm = what
-        width,height = font.getsize(iAm)
-        self.drawRightAlignedText((pos[0]-(width*1.3),pos[1]), iAm, (font, self.textColorSoi))
-
-    def drawColor(self, color):
-        pos = (self.img.size[0]/2, 700)
-        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
-        width,height = font.getsize(color)
-        self.drawLeftAlignedText((pos[0]+200,height-10), color, (font, self.textColorColor))
-
-    def drawCompany(self, name):
-        pos = (self.img.size[0]/2, 700)
-        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(26, name)*300/72))
-        self.drawCenteredText(pos, name, (font, self.textColorCompany))
+        pos = (self.img.size[0]/2, (self.img.size[1]/4)*3)
+        font = ImageFont.truetype(self.ttfFont, int(self.getFitSize(30, name)))
+        self.drawCenteredText(pos, what, (font, self.textColorSoi))
 
     def save(self, filename, doubleSided=True):
         if not doubleSided:
@@ -184,16 +163,17 @@ for id, name, company,language in reader.getData():
     for color in colorList:
         print("Badge ID: {} - Name: {} - What: {} - Color: http://www.colorhexa.com/{}".format(id, name, company, triplet(eval(color))))
         badgeTemplate = "images/badgeTemplate_overlay.png"
+        badgeTemplate = "images/badgeTemplate_180x60mm.png"
         badge = BadgeImage(badgeTemplate)
         confBadge = {'LANG': language,
                     'color': "#" + triplet(eval(color)),
                     'what': company}
-        badge.drawHello(confBadge["LANG"])
+        #badge.drawHello(confBadge["LANG"])
         # badge.drawColor(confBadge["color"].upper())
         badge.drawPerson(name)
         badge.drawSoi(confBadge["LANG"],confBadge["what"])
-        filename = os.path.join(dir, dir + "_badge_" + str(id) + "_" + confBadge["LANG"] + ".png")
+        filename = os.path.join(dir, dir + "_badge_" + str(id) + ".png")
         badge.save(filename, False)
-        badge.reColor(color, filename, filename)
+        #badge.reColor(color, filename, filename)
     count += 1
 print("\n%d badges created" % (count))
